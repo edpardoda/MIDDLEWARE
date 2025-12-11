@@ -1,0 +1,33 @@
+{
+  "name": "api-productos",
+  "version": "1.0.0",
+  "description": "PE-2.1 API Rest para gestion de productos ",
+  "license": "ISC",
+  "author": "andres",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "start": "node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.1.3",
+    "sequelize": "^6.37.7",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.10.1",
+    "nodemon": "^3.1.11",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
