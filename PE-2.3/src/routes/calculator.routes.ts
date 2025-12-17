@@ -1,20 +1,20 @@
 import { FastifyInstance } from "fastify";
-import calculatorTools from '../tools/calculator.tools.json'
+import calculatorTools from "../tools/calculator.tools.json" with { type: "json" };
 
 interface CalculatorRequest {
-    operation: 'add' | 'subtract' | 'multiply' | 'divide';
+    operation: "add" | "subtract" | "multiply" | "divide";
     a: number;
     b: number;
 }
 
-// Ruta completa usando función anónima
-export const calculatorRoutes = (fastify: FastifyInstance) => {
+export async function calculatorRoutes(fastify: FastifyInstance) {
 
     fastify.post<{ Body: CalculatorRequest }>(
         "/tools/calculator",
         {
+            onRequest: [(fastify as any).authenticate],
             schema: {
-                description: 'Ejecutar operaciones aritméticas',
+                description: "Ejecutar operaciones aritméticas",
                 tags: ["calculator"],
                 body: calculatorTools.inputSchema,
                 response: {
@@ -28,19 +28,15 @@ export const calculatorRoutes = (fastify: FastifyInstance) => {
                     400: {
                         type: "object",
                         properties: {
-                            error: {type: "string"}
+                            error: { type: "string" }
                         }
                     }
                 }
             }
         },
-
-
         async (request, reply) => {
-
             const { operation, a, b } = request.body;
-
-            let result: number = 0;
+            let result = 0;
 
             switch (operation) {
                 case "add":
@@ -57,16 +53,15 @@ export const calculatorRoutes = (fastify: FastifyInstance) => {
 
                 case "divide":
                     if (b === 0) {
-                        return reply.status(400).send({ error: "No se puede dividir para cero" });
+                        return reply
+                            .status(400)
+                            .send({ error: "No se puede dividir para cero" });
                     }
                     result = a / b;
                     break;
-
-                default:
-                    return reply.status(400).send({ error: "Operación inválida" });
             }
 
             return { result, operation };
         }
     );
-};
+}
