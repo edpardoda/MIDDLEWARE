@@ -3,6 +3,7 @@
   "description": "Realiza operaciones aritméticas básicas: sumar, restar, multiplicar y dividir.",
   "inputSchema": {
     "type": "object",
+    "description": "Esquema de entrada para ejecutar una operación aritmética básica.",
     "properties": {
       "operation": {
         "type": "string",
@@ -12,18 +13,62 @@
           "multiply",
           "divide"
         ],
-        "description": "Tipo de operación a realizar"
+        "description": "Tipo de operación a realizar."
       },
       "a": {
         "type": "number",
-        "description": "Primer operando"
+        "description": "Primer operando numérico."
       },
       "b": {
         "type": "number",
-        "description": "Segundo operando"
+        "description": "Segundo operando numérico."
       }
     },
     "required": ["operation", "a", "b"],
-    "additionalProperties": false
+    "additionalProperties": false,
+
+    "examples": [
+      {
+        "summary": "Ejemplo de suma",
+        "value": {
+          "operation": "add",
+          "a": 10,
+          "b": 5
+        }
+      },
+      {
+        "summary": "Ejemplo de resta",
+        "value": {
+          "operation": "subtract",
+          "a": 8,
+          "b": 3
+        }
+      },
+      {
+        "summary": "Ejemplo de multiplicación",
+        "value": {
+          "operation": "multiply",
+          "a": 4,
+          "b": 6
+        }
+      },
+      {
+        "summary": "Ejemplo de división",
+        "value": {
+          "operation": "divide",
+          "a": 20,
+          "b": 4
+        }
+      },
+      {
+        "summary": "Error: división por cero",
+        "value": {
+          "operation": "divide",
+          "a": 10,
+          "b": 0
+        }
+      }
+    ]
   }
 }
+
