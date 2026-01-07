@@ -54,6 +54,6 @@ app.use((req: Request, res: Response) => {
 app.use(errorHandler);
 
 app.listen(env.PORT, () => {
-  console.log(`✅ Servidor ejecutándose en puerto ${env.PORT}`);
-  console.log(`📝 Documentación: http://localhost:${env.PORT}/api/productos`);
+  console.log(`Servidor ejecutándose en puerto ${env.PORT}`);
+  console.log(`Documentación: http://localhost:${env.PORT}/api/productos`);
 });

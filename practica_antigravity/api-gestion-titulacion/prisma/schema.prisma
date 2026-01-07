@@ -1,0 +1,231 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum RolUsuario {
+  estudiante
+  tutor
+  Director
+  Coordinador
+  comite
+}
+
+enum Semestre {
+  Septimo
+  Octavo
+}
+
+enum AreaInvestigacion {
+  IA
+  Seguridad
+  Desarrollo
+  Redes
+  DataScience
+  Otro
+}
+
+enum EstadoPropuesta {
+  En_Revision @map("En Revision")
+  Aprobada
+  Rechazada
+  Pendiente
+}
+
+enum EstadoAvance {
+  entregado
+  no_entregado @map("no entregado")
+  calificado
+}
+
+enum RolRevisor {
+  miembro_comite
+  tutor_revisor
+  director_carrera
+}
+
+// Models
+
+model Usuario {
+  idUsuario           Int      @id @default(autoincrement())
+  Nombres             String?  @db.VarChar(45)
+  Apellidos           String?  @db.VarChar(45)
+  Correo_Institucional String? @map("Correo Institucional") @db.VarChar(45)
+  clave               String?  @db.VarChar(45)
+
+  // Relations
+  roles               Usuario_has_roles[]
+  Estudiante          Estudiante[]
+  Cordinador          Cordinador[]
+  tutor               tutor[]
+  Director            Director[]
+  Evaluaciones        Evaluacion_Propuesta[]
+}
+
+model roles {
+  idroles             Int                 @id @default(autoincrement())
+  tipo_rol            RolUsuario?
+  usuarios            Usuario_has_roles[]
+}
+
+model Usuario_has_roles {
+  Usuario_idUsuario   Int
+  roles_idroles       Int
+  
+  Usuario             Usuario @relation(fields: [Usuario_idUsuario], references: [idUsuario], onDelete: NoAction, onUpdate: NoAction)
+  Rol                 roles   @relation(fields: [roles_idroles], references: [idroles], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([Usuario_idUsuario, roles_idroles])
+  @@index([roles_idroles], map: "fk_Usuario_has_roles_roles1_idx")
+  @@index([Usuario_idUsuario], map: "fk_Usuario_has_roles_Usuario_idx")
+}
+
+model Estudiante {
+  idEstudiante        Int       @id @default(autoincrement())
+  semestre            Semestre?
+  Usuario_idUsuario   Int
+
+  Usuario             Usuario           @relation(fields: [Usuario_idUsuario], references: [idUsuario], onDelete: NoAction, onUpdate: NoAction)
+  Propuestas          Propuesta_tesis[]
+  Prerequisitos       Estudiante_has_Prerequisitos[]
+
+  @@index([Usuario_idUsuario], map: "fk_Estudiante_Usuario1_idx")
+}
+
+model Prerequisitos {
+  idPrerequisitos     Int       @id @default(autoincrement())
+  nombre              String?   @db.VarChar(45)
+  estado              Int?      @db.TinyInt
+
+  Estudiantes         Estudiante_has_Prerequisitos[]
+}
+
+model Estudiante_has_Prerequisitos {
+  Estudiante_idEstudiante       Int
+  Prerequisitos_idPrerequisitos Int
+
+  Estudiante        Estudiante    @relation(fields: [Estudiante_idEstudiante], references: [idEstudiante], onDelete: NoAction, onUpdate: NoAction)
+  Prerequisito      Prerequisitos @relation(fields: [Prerequisitos_idPrerequisitos], references: [idPrerequisitos], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([Estudiante_idEstudiante, Prerequisitos_idPrerequisitos])
+  @@index([Prerequisitos_idPrerequisitos], map: "fk_Estudiante_has_Prerequisitos_Prerequisitos1_idx")
+  @@index([Estudiante_idEstudiante], map: "fk_Estudiante_has_Prerequisitos_Estudiante1_idx")
+}
+
+model Cordinador {
+  idCordinador        Int @id @default(autoincrement())
+  Usuario_idUsuario   Int
+
+  Usuario             Usuario @relation(fields: [Usuario_idUsuario], references: [idUsuario], onDelete: NoAction, onUpdate: NoAction)
+  
+  // Note: Add relation to Avance if Coordinator is directly referenced there, 
+  // currently Avance was simplified to remove direct composite keys but we can add back if needed.
+  @@index([Usuario_idUsuario], map: "fk_Cordinador_Usuario1_idx")
+}
+
+model Propuesta_tesis {
+  idPropuesta_tesis       Int       @id @default(autoincrement())
+  tema                    String?   @db.VarChar(45)
+  objetivos               String?   @db.Text
+  problematica            String?   @db.Text
+  are_investigacion       String?   @db.VarChar(50) // Changed to string for flexibility or use Enum
+  alcance                 String?   @db.Text
+  archivo                 String?   @db.VarChar(255)
+  fecha_publicacion       DateTime? @db.Date
+  fecha_limite            DateTime? @db.Date
+  estado                  EstadoPropuesta? @default(Pendiente)
+  seleccionada            Int?      @default(0) @db.TinyInt
+  comentarios_generales   String?   @db.Text
+  Estudiante_idEstudiante Int
+
+  Estudiante              Estudiante @relation(fields: [Estudiante_idEstudiante], references: [idEstudiante], onDelete: NoAction, onUpdate: NoAction)
+  
+  Avances                 Avance[]
+  Evaluaciones            Evaluacion_Propuesta[]
+  Predefensa              Predefensa[]
+  Defensa                 Defensa[]
+
+  @@index([Estudiante_idEstudiante], map: "fk_Propuesta_tesis_Estudiante1_idx")
+}
+
+model tutor {
+  idtutor             Int @id @default(autoincrement())
+  Usuario_idUsuario   Int
+
+  Usuario             Usuario @relation(fields: [Usuario_idUsuario], references: [idUsuario], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([Usuario_idUsuario], map: "fk_tutor_Usuario1_idx")
+}
+
+model Director {
+  idDirector          Int @id @default(autoincrement())
+  Usuario_idUsuario   Int
+
+  Usuario             Usuario @relation(fields: [Usuario_idUsuario], references: [idUsuario], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([Usuario_idUsuario], map: "fk_Director_Usuario1_idx")
+}
+
+model Avance {
+  idAvance                            Int             @id @default(autoincrement())
+  semana                              Int?
+  calificacion                        Decimal?        @db.Decimal(4, 2)
+  contenido                           String?         @db.Text
+  fecha_inicio                        DateTime?       @db.Date
+  fecha_entrega                       DateTime?       @db.Date
+  fecha_limite                        DateTime?       @db.Date
+  estado                              EstadoAvance?
+  verficacion_revicion                Int?            @db.TinyInt
+  Propuesta_tesis_idPropuesta_tesis   Int
+  tutor_idtutor                       Int?
+
+  Propuesta                           Propuesta_tesis @relation(fields: [Propuesta_tesis_idPropuesta_tesis], references: [idPropuesta_tesis], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([Propuesta_tesis_idPropuesta_tesis], map: "fk_Avance_Propuesta1_idx")
+}
+
+model Evaluacion_Propuesta {
+  idEvaluacion                        Int             @id @default(autoincrement())
+  Propuesta_tesis_idPropuesta_tesis   Int
+  Usuario_idUsuario                   Int
+  rol_revisor                         RolRevisor?
+  comentarios                         String?         @db.Text
+  calificacion                        Decimal?        @db.Decimal(4, 2)
+  fecha_evaluacion                    DateTime?       @db.Date
+
+  Propuesta                           Propuesta_tesis @relation(fields: [Propuesta_tesis_idPropuesta_tesis], references: [idPropuesta_tesis], onDelete: NoAction, onUpdate: NoAction)
+  Usuario                             Usuario         @relation(fields: [Usuario_idUsuario], references: [idUsuario], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([Usuario_idUsuario], map: "fk_Evaluacion_Propuesta_Usuario1_idx")
+  @@index([Propuesta_tesis_idPropuesta_tesis], map: "fk_Evaluacion_Propuesta_Propuesta1_idx")
+}
+
+model Predefensa {
+  idPredefensa                        Int             @id @default(autoincrement())
+  fecha                               DateTime?       @db.Date
+  manual_usuario                      String?         @db.VarChar(255)
+  manual_programador                  String?         @db.VarChar(255)
+  articulo_cientifico                 String?         @db.VarChar(255)
+  calificacion                        Decimal?        @db.Decimal(4, 2)
+  Propuesta_tesis_idPropuesta_tesis   Int
+
+  Propuesta                           Propuesta_tesis @relation(fields: [Propuesta_tesis_idPropuesta_tesis], references: [idPropuesta_tesis], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([Propuesta_tesis_idPropuesta_tesis], map: "fk_Predefensa_Propuesta1_idx")
+}
+
+model Defensa {
+  idDefensa                           Int             @id @default(autoincrement())
+  calificacion                        Decimal?        @db.Decimal(4, 2)
+  acta_grado                          String?         @db.VarChar(255)
+  Propuesta_tesis_idPropuesta_tesis   Int
+
+  Propuesta                           Propuesta_tesis @relation(fields: [Propuesta_tesis_idPropuesta_tesis], references: [idPropuesta_tesis], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([Propuesta_tesis_idPropuesta_tesis], map: "fk_Defensa_Propuesta1_idx")
+}

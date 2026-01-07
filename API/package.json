@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "PE-2.1 API Rest para gestion de productos ",
   "license": "ISC",
-  "author": "andres",
+  "author": "Eduardo Pardo",
   "type": "module",
   "main": "index.ts",
   "scripts": {
     "dev": "tsx src/index.ts",
     "start": "node src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -25,8 +25,11 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.10.1",
+    "jest": "^30.2.0",
     "nodemon": "^3.1.11",
+    "ts-jest": "^29.4.6",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
