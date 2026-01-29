@@ -7,7 +7,7 @@
 6. Si no, acceso solo a sus propios registros
 */
 
-function buildRLSFilter(user) {
+export function buildRLSFilter(user) {
   if (user.role === "admin") {
     // Admin puede ver todo
     return { clause: "1=1", params: [] };
@@ -19,7 +19,7 @@ function buildRLSFilter(user) {
 
 
 // Verifica si un registro pertenece al usuario
-async function verifyOwnership(pool, table, recordId, userId) {
+export async function verifyOwnership(pool, table, recordId, userId) {
   const [rows] = await pool.execute(
     `SELECT user_id FROM ${table} WHERE id = ?`,
     [recordId]
@@ -32,4 +32,3 @@ async function verifyOwnership(pool, table, recordId, userId) {
   return rows[0].user_id === userId;
 }
 
-export { buildRLSFilter, verifyOwnership };

@@ -1,5 +1,11 @@
 import dotenv from 'dotenv';
 import fastify from 'fastify';
+import authPlugin from './plugin/auth.js';
+import recordsRoutes  from './routes/records.routes.js';
+import auditRoutes from './routes/audit.route.js';
+import  authRoutes  from './routes/auth.routes.js';
+
+
 dotenv.config();
 
 const app = fastify({ 
@@ -19,6 +25,19 @@ import testConnection from './config/database.js';
 
 async function startServer() {
     try {
+        await app.register(cors, {
+            origin: '*'
+        });
+
+        await app.register(authPlugin);
+        await app.register(authRoutes, { prefix: '/auth' });
+        await app.register(recordsRoutes, { prefix: '/records' });
+        await app.register(auditRoutes, { prefix: '/audit' });
+
+        app.get('/', async (request, reply) => {
+            reply.send({ message: 'Bienvenido a la API' });
+        });
+
         await testConnection();
         await app.listen({ 
             port: process.env.PORT || 3000, 
@@ -33,11 +52,5 @@ async function startServer() {
 
 startServer();
 
-
-
-
-app.get('/', async (request, reply) => {
-    reply.send({ hello: 'world' });
-});
 
 export default app;

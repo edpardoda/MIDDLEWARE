@@ -1,56 +1,58 @@
 import bcrypt from "bcryptjs";
-import { pool } from "../db.js";
+import { pool } from "../config/database.js";
 
 async function authRoutes(fastify, options) {
-
-  // ---------- RUTA REGISTER ----------
-  fastify.post("/register", {
-    schema: {
-      body: {
-        type: "object",
-        required: ["username", "password", "role"],
-        properties: {
-          username: { type: "string" },
-          password: { type: "string" },
-          role: { type: "string" }
-        }
+// ---------- RUTA REGISTER ----------
+fastify.post("/register", {
+  schema: {
+    body: {
+      type: "object",
+      required: ["username", "password"],
+      properties: {
+        username: { type: "string" },
+        password: { type: "string" }
       }
     }
-  }, async (request, reply) => {
+  }
+}, async (request, reply) => {
 
-    const { username, password, role } = request.body;
+  const { username, password } = request.body;
 
-    try {
-      const [existing] = await pool.execute(
-        "SELECT * FROM users WHERE username = ?",
-        [username]
-      );
+  // Rol por defecto
+  const role = "user";
 
-      if (existing.length > 0) {
-        return reply.status(409).send({
-          error: "Conflict",
-          message: "Username already exists"
-        });
-      }
+  try {
+    const [existing] = await pool.execute(
+      "SELECT * FROM users WHERE username = ?",
+      [username]
+    );
 
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      await pool.execute(
-        "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-        [username, hashedPassword, role]
-      );
-
-      return reply.status(201).send({
-        message: "User registered successfully"
-      });
-
-    } catch (error) {
-      return reply.status(500).send({
-        error: "Internal Server Error",
-        message: error.message
+    if (existing.length > 0) {
+      return reply.status(409).send({
+        error: "Conflict",
+        message: "Username already exists"
       });
     }
-  });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 👇 Usa el nombre real de tu columna
+    await pool.execute(
+      "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+      [username, hashedPassword, role]
+    );
+
+    return reply.status(201).send({
+      message: "User registered successfully"
+    });
+
+  } catch (error) {
+    return reply.status(500).send({
+      error: "Internal Server Error",
+      message: error.message
+    });
+  }
+});
 
 
   // ---------- RUTA LOGIN ----------
