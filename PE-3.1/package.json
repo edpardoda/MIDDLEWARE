@@ -21,6 +21,7 @@
     "fastify": "^5.7.1",
     "fastify-plugin": "^5.1.0",
     "mysql2": "^3.16.1",
+    "nodemailer": "^7.0.13",
     "zod": "^4.3.6"
   },
   "devDependencies": {
